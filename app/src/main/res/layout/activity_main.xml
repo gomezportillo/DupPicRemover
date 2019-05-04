@@ -18,7 +18,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Set the search path"
+            android:text="@string/select_txt"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
@@ -31,11 +31,11 @@
             android:layout_height="wrap_content"
             android:ems="10"
             android:inputType="textPersonName"
-            android:text="/path/" />
+            android:text="" />
 
         <Space
             android:layout_width="1dp"
-            android:layout_height="30dp"/>
+            android:layout_height="50dp"/>
 
         <Switch
             android:id="@+id/switch_recursive"
@@ -47,7 +47,7 @@
 
         <Space
             android:layout_width="1dp"
-            android:layout_height="30dp"/>
+            android:layout_height="50dp"/>
 
         <Button
             android:id="@+id/button_search"
@@ -55,7 +55,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:gravity="center"
-            android:text="@string/search" />
+            android:text="@string/search_txt" />
 
     </LinearLayout>
 

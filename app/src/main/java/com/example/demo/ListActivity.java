@@ -1,6 +1,8 @@
 package com.example.demo;
 
+import android.net.Uri;
 import android.os.Environment;
+import android.support.v4.provider.DocumentFile;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.ArrayAdapter;
@@ -18,6 +20,9 @@ public class ListActivity extends AppCompatActivity
 {
     private ListView lv_files;
 
+    boolean recursive;
+    Uri uri_path;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -29,49 +34,45 @@ public class ListActivity extends AppCompatActivity
 
         // Get parameters from prev. activity
         // REF: https://stackoverflow.com/a/5265952/3594238
-        boolean recursive;
-        String path;
+
         if (savedInstanceState == null)
         {
             Bundle extras = getIntent().getExtras();
             recursive = extras.getBoolean("Recursive");
-            path = extras.getString("Path");
+            uri_path = (Uri) extras.get("URI");
         }
         else
         {
             recursive = (boolean) savedInstanceState.getSerializable("Recursive");
-            path = (String) savedInstanceState.getSerializable("Path");
+            uri_path = (Uri) savedInstanceState.getSerializable("URI");
 
         }
 //        Toast.makeText(getApplicationContext(), "Path " + path , Toast.LENGTH_SHORT).show();
 
         // Search for files
-        List<String> files = null;
+        List<String> files = new ArrayList<>();
 
-        File picture_file = new File(path);
-        if (picture_file.exists())
+        DocumentFile df_path = DocumentFile.fromTreeUri(this, uri_path);
+        if (df_path.exists())
         {
-            Toast.makeText(getApplicationContext(), "Path _" + path + "_", Toast.LENGTH_SHORT).show();
+            String tmp_str;
+            // http://android-er.blogspot.com/2015/09/example-of-using-intentactionopendocume.html
+            for (DocumentFile file : df_path.listFiles()) {
 
-
-            if (recursive)
-            {
-                files = getListFilesRecursive(picture_file);
+                if(file.isDirectory())
+                {
+                    // is a Directory and this is not recursive
+                }
+                else
+                {
+                    tmp_str = (file.getName() + " (" + file.getType() + ")\n");
+                    files.add(tmp_str);
+                }
             }
-            else
-            {
-                files = getListFiles(picture_file);
-            }
-            Toast.makeText(getApplicationContext(), "List view size: " + files.size(), Toast.LENGTH_SHORT).show();
         }
         else
         {
-            Toast.makeText(getApplicationContext(), "Path _" + path + "_ does not exists", Toast.LENGTH_SHORT).show();
-
-            files = new ArrayList<String>();
-            files.add("Hola");
-            files.add("Hola");
-            files.add("Hola");
+            Toast.makeText(getApplicationContext(), "Path _" + uri_path.toString() + "_ does not exists", Toast.LENGTH_SHORT).show();
         }
 
         // REF. https://stackoverflow.com/a/5070922/3594238
@@ -82,46 +83,5 @@ public class ListActivity extends AppCompatActivity
 
         lv_files = findViewById(R.id.listview_files);
         lv_files.setAdapter(arrayAdapter);
-    }
-
-
-    //REF. https://stackoverflow.com/a/9531063/3594238
-    private List<String> getListFilesRecursive(File parentDir)
-    {
-        ArrayList<String> inFiles = new ArrayList<String>();
-        File[] files = parentDir.listFiles();
-        for (File file : files)
-        {
-            if (file.isDirectory())
-            {
-                inFiles.addAll(getListFilesRecursive(file));
-            }
-            else
-            {
-                inFiles.add(file.getName());
-            }
-        }
-        return inFiles;
-    }
-
-    //REF. https://stackoverflow.com/a/9531063/3594238
-    private List<String> getListFiles(File parentDir)
-    {
-        List<String> inFiles = new ArrayList<>();
-        Queue<File> files = new LinkedList<>();
-        files.addAll(Arrays.asList(parentDir.listFiles()));
-        while (!files.isEmpty())
-        {
-            File file = files.remove();
-            if (file.isDirectory())
-            {
-                files.addAll(Arrays.asList(file.listFiles()));
-            }
-            else
-            {
-                inFiles.add(file.getName());
-            }
-        }
-        return inFiles;
     }
 }

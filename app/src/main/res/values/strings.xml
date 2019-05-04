@@ -2,4 +2,6 @@
     <string name="app_name">DupPicRemover</string>
 
     <string name="search">Search</string>
+
+    <string name="dup_images_txt">Duplicated pictures found</string>
 </resources>

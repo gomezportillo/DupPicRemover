@@ -1,11 +1,14 @@
 package com.example.demo;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Environment;
 import android.support.v4.provider.DocumentFile;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -19,9 +22,11 @@ import java.util.Queue;
 public class ListActivity extends AppCompatActivity
 {
     private ListView lv_files;
+    private Button delete_button;
 
-    boolean recursive;
-    Uri uri_path;
+    private boolean recursive;
+    private Uri uri_path;
+    private List<String> files;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -29,8 +34,11 @@ public class ListActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list);
 
-        getSupportActionBar().setTitle(R.string.dup_images_txt);
+        getSupportActionBar().setTitle(R.string.dup_images_title);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        // Get the GUI variables
+        delete_button = findViewById(R.id.button_delete);
 
         // Get parameters from prev. activity
         // REF: https://stackoverflow.com/a/5265952/3594238
@@ -45,23 +53,52 @@ public class ListActivity extends AppCompatActivity
         {
             recursive = (boolean) savedInstanceState.getSerializable("Recursive");
             uri_path = (Uri) savedInstanceState.getSerializable("URI");
-
         }
 //        Toast.makeText(getApplicationContext(), "Path " + path , Toast.LENGTH_SHORT).show();
 
         // Search for files
+        files = getFilesFromURI(uri_path);
+
+        // REF. https://stackoverflow.com/a/5070922/3594238
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_list_item_1,
+                files);
+
+        lv_files = findViewById(R.id.listview_files);
+        lv_files.setAdapter(arrayAdapter);
+
+        delete_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v)
+            {
+                Intent intent = new Intent(ListActivity.this, SuccessActivity.class);
+
+                intent.putExtra("Images_found", files.size());
+
+                startActivityForResult(intent, 0);
+            }
+        });
+    }
+
+    protected List<String> getFilesFromURI(Uri uri)
+    {
+        DocumentFile df_path = DocumentFile.fromTreeUri(this, uri);
+
         List<String> files = new ArrayList<>();
 
-        DocumentFile df_path = DocumentFile.fromTreeUri(this, uri_path);
         if (df_path.exists())
         {
             String tmp_str;
             // http://android-er.blogspot.com/2015/09/example-of-using-intentactionopendocume.html
-            for (DocumentFile file : df_path.listFiles()) {
-
+            for (DocumentFile file : df_path.listFiles())
+            {
                 if(file.isDirectory())
                 {
-                    // is a Directory and this is not recursive
+                    if (recursive)
+                    {
+                        files.addAll( getFilesFromURI( file.getUri() ));
+                    }
                 }
                 else
                 {
@@ -72,16 +109,8 @@ public class ListActivity extends AppCompatActivity
         }
         else
         {
-            Toast.makeText(getApplicationContext(), "Path _" + uri_path.toString() + "_ does not exists", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "Path " + uri_path.toString() + " does not exists", Toast.LENGTH_SHORT).show();
         }
-
-        // REF. https://stackoverflow.com/a/5070922/3594238
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
-                this,
-                android.R.layout.simple_list_item_1,
-                files);
-
-        lv_files = findViewById(R.id.listview_files);
-        lv_files.setAdapter(arrayAdapter);
+        return files;
     }
 }

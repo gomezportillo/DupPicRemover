@@ -3,9 +3,14 @@
 
     <!-- Main activity -->
     <string name="select_txt">Set the path to the pictures</string>
+    <string name="switch_txt">Recursive search</string>
     <string name="search_txt">Search</string>
 
     <!-- List activity -->
-    <string name="dup_images_txt">Duplicated pictures found</string>
+    <string name="dup_images_title">Duplicated pictures found</string>
+    <string name="delete_button_txt">Delete selected</string>
 
+    <!-- Success activity -->
+    <string name="success_title">Result</string>
+    <string name="result_txt">Imagenes deleted successfully: </string>
 </resources>

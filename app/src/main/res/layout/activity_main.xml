@@ -1,19 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:gravity="center">
-
 
         <TextView
             android:layout_width="wrap_content"
@@ -41,9 +40,7 @@
             android:id="@+id/switch_recursive"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Recursive search"
-            tools:layout_editor_absoluteX="132dp"
-            tools:layout_editor_absoluteY="318dp" />
+            android:text="@string/switch_txt" />
 
         <Space
             android:layout_width="1dp"

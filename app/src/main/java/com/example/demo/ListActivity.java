@@ -1,18 +1,25 @@
 package com.example.demo;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
 import android.support.v4.provider.DocumentFile;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -85,7 +92,8 @@ public class ListActivity extends AppCompatActivity
     {
         DocumentFile df_path = DocumentFile.fromTreeUri(this, uri);
 
-        List<String> files = new ArrayList<>();
+        List<String> files_str = new ArrayList<>();
+        List<File> files = new ArrayList<>();
 
         if (df_path.exists())
         {
@@ -97,13 +105,24 @@ public class ListActivity extends AppCompatActivity
                 {
                     if (recursive)
                     {
-                        files.addAll( getFilesFromURI( file.getUri() ));
+                        files_str.addAll( getFilesFromURI( file.getUri() ));
                     }
                 }
-                else
+                else if (file.getName().endsWith(".jpg") ||
+                        file.getName().endsWith(".png") ||
+                        file.getName().endsWith(".jpeg"))
                 {
-                    tmp_str = (file.getName() + " (" + file.getType() + ")\n");
-                    files.add(tmp_str);
+                    files.add(new File( file.getUri().getPath() ));
+
+                    // Save the name
+                    tmp_str = (file.getName() + "\n");
+                    files_str.add(tmp_str);
+
+                    // Generate the hash md5
+                    String image_path = file.getUri().getPath();
+                    String image_string = getBase64String( image_path );
+                    String md5 = md5(image_string);
+                    Log.d("md5", md5);
                 }
             }
         }
@@ -111,6 +130,45 @@ public class ListActivity extends AppCompatActivity
         {
             Toast.makeText(getApplicationContext(), "Path " + uri_path.toString() + " does not exists", Toast.LENGTH_SHORT).show();
         }
-        return files;
+        return files_str;
+    }
+
+    // REF. https://stackoverflow.com/a/41396283/3594238
+    private String getBase64String(String path)
+    {
+        // give your image file url in mCurrentPhotoPath
+        Bitmap bitmap = BitmapFactory.decodeFile(path);
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+        // In case you want to compress your image, here it's at 40%
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 40, byteArrayOutputStream);
+        byte[] byteArray = byteArrayOutputStream.toByteArray();
+
+        return Base64.encodeToString(byteArray, Base64.DEFAULT);
+    }
+
+    //REF. https://mobikul.com/converting-string-md5-hashes-android/
+    public String md5(String input_string)
+    {
+        try
+        {
+            // Create MD5 Hash
+            MessageDigest digest = java.security.MessageDigest.getInstance("MD5");
+            digest.update(input_string.getBytes());
+            byte messageDigest[] = digest.digest();
+
+            // Create Hex String
+            StringBuffer hexString = new StringBuffer();
+            for (int i=0; i<messageDigest.length; i++)
+            {
+                hexString.append( Integer.toHexString(0xFF & messageDigest[i]) );
+            }
+            return hexString.toString();
+        }
+        catch (NoSuchAlgorithmException e)
+        {
+            e.printStackTrace();
+        }
+        return "";
     }
 }

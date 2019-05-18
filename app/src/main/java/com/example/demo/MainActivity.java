@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -12,8 +13,7 @@ import android.widget.Switch;
 import android.widget.Toast;
 
 
-public class MainActivity extends AppCompatActivity
-{
+public class MainActivity extends AppCompatActivity {
     EditText text_path;
     Button button_search;
     Switch switch_recursive;
@@ -37,8 +37,7 @@ public class MainActivity extends AppCompatActivity
         // Set listeners
         text_path.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v)
-            {
+            public void onClick(View v) {
                 // Directory searcher
                 // REF. https://github.com/googlesamples/android-DirectorySelection
                 Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
@@ -48,32 +47,28 @@ public class MainActivity extends AppCompatActivity
 
         button_search.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v)
-            {
-                Intent intent = new Intent(MainActivity.this, ListActivity.class);
+            public void onClick(View v) {
+                Intent list_activity_intent = new Intent(MainActivity.this, ListActivity.class);
 
-                intent.putExtra("URI", uri_path);
-                intent.putExtra("Recursive", switch_recursive.isChecked());
+                Log.d("uri", "uri_path: "+uri_path);
 
-                startActivityForResult(intent, 0);
+                list_activity_intent.putExtra("URI", uri_path);
+                list_activity_intent.putExtra("Recursive", switch_recursive.isChecked());
+
+                startActivityForResult(list_activity_intent, 0);
             }
         });
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data)
-    {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_CODE_OPEN_DIRECTORY)
-        {
-            if (resultCode == Activity.RESULT_OK)
-            {
+        if (requestCode == REQUEST_CODE_OPEN_DIRECTORY) {
+            if (resultCode == Activity.RESULT_OK) {
                 uri_path = data.getData();
                 text_path.setText(uri_path.getPath());
                 button_search.setEnabled(true);
-            }
-            else
-            {
+            } else {
                 Toast.makeText(getApplicationContext(), "Result != OK", Toast.LENGTH_SHORT).show();
             }
         }

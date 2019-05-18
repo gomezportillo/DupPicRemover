@@ -1,48 +1,53 @@
 package com.example.demo;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.v4.provider.DocumentFile;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
-public class ListActivity extends AppCompatActivity
-{
+public class ListActivity extends AppCompatActivity {
     private ListView lv_files;
     private Button delete_button;
 
     private boolean recursive;
     private Uri uri_path;
-    private List<String> files;
+    //private List<String> files;
+    private ArrayList<Fichero> arrFicheros;
+    private CustomListAdapter adaptador = null;
+
+    private ProgressDialog progressDialog;
+
+    private HashMap<String, ArrayList<DocumentFile>> ficheros;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list);
 
         getSupportActionBar().setTitle(R.string.dup_images_title);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setIcon(R.mipmap.ic_launcher);
+        progressDialog.setMessage(getText(R.string.loading));
+        progressDialog.show();
 
         // Get the GUI variables
         delete_button = findViewById(R.id.button_delete);
@@ -61,39 +66,45 @@ public class ListActivity extends AppCompatActivity
             recursive = (boolean) savedInstanceState.getSerializable("Recursive");
             uri_path = (Uri) savedInstanceState.getSerializable("URI");
         }
-//        Toast.makeText(getApplicationContext(), "Path " + path , Toast.LENGTH_SHORT).show();
 
         // Search for files
-        files = getFilesFromURI(uri_path);
-
-        // REF. https://stackoverflow.com/a/5070922/3594238
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_list_item_1,
-                files);
+        arrFicheros = getFilesFromURI(uri_path);
 
         lv_files = findViewById(R.id.listview_files);
-        lv_files.setAdapter(arrayAdapter);
+        adaptador = new CustomListAdapter(this, arrFicheros);
+        lv_files.setAdapter(adaptador);
+
+        progressDialog.dismiss();
 
         delete_button.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v)
-            {
+            public void onClick(View v) {
+
+                int deleted = 0;
+                boolean checked[] = adaptador.getChecked();
+
+                for (int i = 0; i < checked.length; i++) {
+                    Log.d("hola", adaptador.getChecked()[i] + "");
+                    if (adaptador.getChecked()[i]) {
+                        deleted += arrFicheros.get(i).eliminarFicheros();
+                    }
+                }
+
                 Intent intent = new Intent(ListActivity.this, SuccessActivity.class);
-
-                intent.putExtra("Images_found", files.size());
-
+                intent.putExtra("images_deleted", deleted);
                 startActivityForResult(intent, 0);
+                finish();
             }
         });
     }
 
-    protected List<String> getFilesFromURI(Uri uri)
+    protected ArrayList<Fichero> getFilesFromURI(Uri uri)
     {
+        Log.d("hola", "getFilesFromURI");
         DocumentFile df_path = DocumentFile.fromTreeUri(this, uri);
 
-        List<String> files_str = new ArrayList<>();
-        List<File> files = new ArrayList<>();
+        ficheros = new HashMap<>();
+        boolean ocu = false;
 
         if (df_path.exists())
         {
@@ -101,28 +112,43 @@ public class ListActivity extends AppCompatActivity
             // http://android-er.blogspot.com/2015/09/example-of-using-intentactionopendocume.html
             for (DocumentFile file : df_path.listFiles())
             {
-                if(file.isDirectory())
+                if (file.isDirectory())
                 {
                     if (recursive)
                     {
-                        files_str.addAll( getFilesFromURI( file.getUri() ));
+                        //files_str.addAll(getFilesFromURI(file.getUri()));
                     }
                 }
-                else if (file.getName().endsWith(".jpg") ||
-                        file.getName().endsWith(".png") ||
-                        file.getName().endsWith(".jpeg"))
+                else if (file.getName().endsWith(".jpg") || file.getName().endsWith(".png") || file.getName().endsWith(".jpeg"))
                 {
-                    files.add(new File( file.getUri().getPath() ));
+                    Log.d("hola", "--------------------------------------");
 
-                    // Save the name
-                    tmp_str = (file.getName() + "\n");
-                    files_str.add(tmp_str);
+                    try
+                    {
+                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), file.getUri());
+                        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+                        byte[] byteArray = byteArrayOutputStream.toByteArray();
+                        String hash = Base64.encodeToString(byteArray, Base64.DEFAULT);
 
-                    // Generate the hash md5
-                    String image_path = file.getUri().getPath();
-                    String image_string = getBase64String( image_path );
-                    String md5 = md5(image_string);
-                    Log.d("md5", md5);
+                        if (ficheros.containsKey(hash))
+                        {
+                            ocu = true;
+                            Log.d("hola", "fichero repetido");
+                            ficheros.get(hash).add(file);
+                        }
+                        else
+                        {
+                            Log.d("hola", "fichero nuevo encontrado");
+                            ArrayList<DocumentFile> aux = new ArrayList<>();
+                            aux.add(file);
+                            ficheros.put(hash, aux);
+                        }
+                    }
+                    catch (IOException e)
+                    {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
@@ -130,45 +156,38 @@ public class ListActivity extends AppCompatActivity
         {
             Toast.makeText(getApplicationContext(), "Path " + uri_path.toString() + " does not exists", Toast.LENGTH_SHORT).show();
         }
-        return files_str;
-    }
 
-    // REF. https://stackoverflow.com/a/41396283/3594238
-    private String getBase64String(String path)
-    {
-        // give your image file url in mCurrentPhotoPath
-        Bitmap bitmap = BitmapFactory.decodeFile(path);
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-
-        // In case you want to compress your image, here it's at 40%
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 40, byteArrayOutputStream);
-        byte[] byteArray = byteArrayOutputStream.toByteArray();
-
-        return Base64.encodeToString(byteArray, Base64.DEFAULT);
-    }
-
-    //REF. https://mobikul.com/converting-string-md5-hashes-android/
-    public String md5(String input_string)
-    {
-        try
+        if(!ocu)
         {
-            // Create MD5 Hash
-            MessageDigest digest = java.security.MessageDigest.getInstance("MD5");
-            digest.update(input_string.getBytes());
-            byte messageDigest[] = digest.digest();
+            Intent intent = new Intent(ListActivity.this, SuccessActivity.class);
+            intent.putExtra("images_deleted", 0);
+            startActivityForResult(intent, 0);
+            finish();
+        }
 
-            // Create Hex String
-            StringBuffer hexString = new StringBuffer();
-            for (int i=0; i<messageDigest.length; i++)
+        //Una vez tengo TODAS las imagenes del smartphone, creo el adapter con las que se repiten
+        ArrayList<Fichero> arrFich = new ArrayList<>();
+
+        Iterator it = ficheros.entrySet().iterator();
+        while (it.hasNext())
+        {
+            Map.Entry pair = (Map.Entry) it.next();
+            ArrayList<DocumentFile> aux = (ArrayList<DocumentFile>) pair.getValue();
+            //Log.d("hola", aux.size()+"");
+            if (aux.size() > 1)
             {
-                hexString.append( Integer.toHexString(0xFF & messageDigest[i]) );
+                Fichero fic = null;
+                try
+                {
+                    fic = new Fichero(MediaStore.Images.Media.getBitmap(this.getContentResolver(), aux.get(0).getUri()), aux);
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+                arrFich.add(fic);
             }
-            return hexString.toString();
         }
-        catch (NoSuchAlgorithmException e)
-        {
-            e.printStackTrace();
-        }
-        return "";
+        return arrFich;
     }
 }

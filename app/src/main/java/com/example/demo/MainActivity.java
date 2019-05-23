@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent list_activity_intent = new Intent(MainActivity.this, ListActivity.class);
 
-                Log.d("uri", "uri_path: "+uri_path);
+                Log.d("mi_debug", "uri_path: "+uri_path);
 
                 list_activity_intent.putExtra("URI", uri_path);
                 list_activity_intent.putExtra("Recursive", switch_recursive.isChecked());

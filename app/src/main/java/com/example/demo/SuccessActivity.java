@@ -22,7 +22,16 @@ public class SuccessActivity extends AppCompatActivity {
 
         images_deleted = getIntent().getIntExtra("images_deleted", 0);
 
-        String message = getString(R.string.result_txt) + " " + images_deleted;
+        String message;
+        if(images_deleted == 0)
+        {
+            message = getString(R.string.result_0_found);
+        }
+        else
+        {
+            message = getString(R.string.result_images_deleted) + " " + images_deleted;
+        }
+
         Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
 
         ImageView img = findViewById(R.id.imageView1);

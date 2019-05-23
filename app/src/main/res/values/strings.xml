@@ -13,5 +13,6 @@
 
     <!-- Success activity -->
     <string name="success_title">Result</string>
-    <string name="result_txt">Images deleted correctly: </string>
+    <string name="result_images_deleted">Images deleted correctly: </string>
+    <string name="result_0_found">No repeated images found</string>
 </resources>

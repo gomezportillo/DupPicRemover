@@ -28,7 +28,6 @@ public class ListActivity extends AppCompatActivity {
 
     private boolean recursive;
     private Uri uri_path;
-    //private List<String> files;
     private ArrayList<Fichero> arrFicheros;
     private CustomListAdapter adaptador = null;
 
@@ -84,7 +83,7 @@ public class ListActivity extends AppCompatActivity {
                 boolean checked[] = adaptador.getChecked();
 
                 for (int i = 0; i < checked.length; i++) {
-                    Log.d("hola", adaptador.getChecked()[i] + "");
+                    Log.d("mi_debug", adaptador.getChecked()[i] + "");
                     if (adaptador.getChecked()[i]) {
                         deleted += arrFicheros.get(i).eliminarFicheros();
                     }
@@ -100,7 +99,7 @@ public class ListActivity extends AppCompatActivity {
 
     protected ArrayList<Fichero> getFilesFromURI(Uri uri)
     {
-        Log.d("hola", "getFilesFromURI");
+        Log.d("mi_debug", "getFilesFromURI");
         DocumentFile df_path = DocumentFile.fromTreeUri(this, uri);
 
         ficheros = new HashMap<>();
@@ -121,7 +120,7 @@ public class ListActivity extends AppCompatActivity {
                 }
                 else if (file.getName().endsWith(".jpg") || file.getName().endsWith(".png") || file.getName().endsWith(".jpeg"))
                 {
-                    Log.d("hola", "--------------------------------------");
+                    Log.d("mi_debug", "--------------------------------------");
 
                     try
                     {
@@ -134,12 +133,12 @@ public class ListActivity extends AppCompatActivity {
                         if (ficheros.containsKey(hash))
                         {
                             ocu = true;
-                            Log.d("hola", "fichero repetido");
+                            Log.d("mi_debug", "fichero repetido");
                             ficheros.get(hash).add(file);
                         }
                         else
                         {
-                            Log.d("hola", "fichero nuevo encontrado");
+                            Log.d("mi_debug", "fichero nuevo encontrado");
                             ArrayList<DocumentFile> aux = new ArrayList<>();
                             aux.add(file);
                             ficheros.put(hash, aux);
@@ -173,7 +172,7 @@ public class ListActivity extends AppCompatActivity {
         {
             Map.Entry pair = (Map.Entry) it.next();
             ArrayList<DocumentFile> aux = (ArrayList<DocumentFile>) pair.getValue();
-            //Log.d("hola", aux.size()+"");
+
             if (aux.size() > 1)
             {
                 Fichero fic = null;

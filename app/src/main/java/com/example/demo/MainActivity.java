@@ -13,7 +13,8 @@ import android.widget.Switch;
 import android.widget.Toast;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity
+{
     EditText text_path;
     Button button_search;
     Switch switch_recursive;
@@ -22,7 +23,8 @@ public class MainActivity extends AppCompatActivity {
     int REQUEST_CODE_OPEN_DIRECTORY = 123;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -61,14 +63,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_CODE_OPEN_DIRECTORY) {
-            if (resultCode == Activity.RESULT_OK) {
+        if (requestCode == REQUEST_CODE_OPEN_DIRECTORY)
+        {
+            if (resultCode == Activity.RESULT_OK)
+            {
                 uri_path = data.getData();
                 text_path.setText(uri_path.getPath());
                 button_search.setEnabled(true);
-            } else {
+            }
+            else
+            {
                 Toast.makeText(getApplicationContext(), "Result != OK", Toast.LENGTH_SHORT).show();
             }
         }

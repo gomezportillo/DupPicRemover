@@ -23,20 +23,20 @@ import java.util.Iterator;
 import java.util.Map;
 
 public class ListActivity extends AppCompatActivity {
-    private ListView lv_files;
-    private Button delete_button;
-
     private boolean recursive;
     private Uri uri_path;
     private ArrayList<Fichero> arrFicheros;
     private CustomListAdapter adaptador = null;
 
-    private ProgressDialog progressDialog;
-
     private HashMap<String, ArrayList<DocumentFile>> ficheros;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        ListView lv_files;
+        Button delete_button;
+        ProgressDialog progressDialog;
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list);
 
@@ -67,7 +67,7 @@ public class ListActivity extends AppCompatActivity {
         }
 
         // Search for files
-        arrFicheros = getFilesFromURI(uri_path);
+        arrFicheros = getRepeatedFilesFromURI(uri_path);
 
         lv_files = findViewById(R.id.listview_files);
         adaptador = new CustomListAdapter(this, arrFicheros);
@@ -97,12 +97,20 @@ public class ListActivity extends AppCompatActivity {
         });
     }
 
-    protected ArrayList<Fichero> getFilesFromURI(Uri uri)
+    /**
+     * @param uri The URI of the directory for duplicated images to be found
+     * @return An ArrayList with the repeated images
+     */
+    protected ArrayList<Fichero> getRepeatedFilesFromURI(Uri uri)
     {
         Log.d("mi_debug", "getFilesFromURI");
         DocumentFile df_path = DocumentFile.fromTreeUri(this, uri);
 
+        ArrayList<DocumentFile> array_aux;
         ficheros = new HashMap<>();
+
+        ArrayList<Fichero> repeated_images = new ArrayList<>();
+
         boolean ocu = false;
 
         if (df_path.exists())
@@ -111,12 +119,10 @@ public class ListActivity extends AppCompatActivity {
             // http://android-er.blogspot.com/2015/09/example-of-using-intentactionopendocume.html
             for (DocumentFile file : df_path.listFiles())
             {
-                if (file.isDirectory())
+                if (file.isDirectory() && recursive)
                 {
-                    if (recursive)
-                    {
-                        //files_str.addAll(getFilesFromURI(file.getUri()));
-                    }
+                    ArrayList<Fichero> ficheros_aux = getRepeatedFilesFromURI(file.getUri());
+                    repeated_images.addAll( ficheros_aux );
                 }
                 else if (file.getName().endsWith(".jpg") || file.getName().endsWith(".png") || file.getName().endsWith(".jpeg"))
                 {
@@ -139,9 +145,9 @@ public class ListActivity extends AppCompatActivity {
                         else
                         {
                             Log.d("mi_debug", "fichero nuevo encontrado");
-                            ArrayList<DocumentFile> aux = new ArrayList<>();
-                            aux.add(file);
-                            ficheros.put(hash, aux);
+                            array_aux = new ArrayList<>();
+                            array_aux.add(file);
+                            ficheros.put(hash, array_aux);
                         }
                     }
                     catch (IOException e)
@@ -165,7 +171,6 @@ public class ListActivity extends AppCompatActivity {
         }
 
         //Una vez tengo TODAS las imagenes del smartphone, creo el adapter con las que se repiten
-        ArrayList<Fichero> arrFich = new ArrayList<>();
 
         Iterator it = ficheros.entrySet().iterator();
         while (it.hasNext())
@@ -184,9 +189,9 @@ public class ListActivity extends AppCompatActivity {
                 {
                     e.printStackTrace();
                 }
-                arrFich.add(fic);
+                repeated_images.add(fic);
             }
         }
-        return arrFich;
+        return repeated_images;
     }
 }

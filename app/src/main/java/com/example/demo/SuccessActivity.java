@@ -1,19 +1,19 @@
 package com.example.demo;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-public class SuccessActivity extends AppCompatActivity {
-
-    private int images_deleted;
-
+public class SuccessActivity extends AppCompatActivity
+{
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        int images_deleted;
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_success);
 
@@ -35,9 +35,11 @@ public class SuccessActivity extends AppCompatActivity {
         Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
 
         ImageView img = findViewById(R.id.imageView1);
-        img.setOnClickListener(new View.OnClickListener() {
+        img.setOnClickListener(new View.OnClickListener()
+        {
             @Override
-            public void onClick(View v) {
+            public void onClick(View v)
+            {
                 Intent intent = new Intent(SuccessActivity.this, MainActivity.class);
                 startActivityForResult(intent, 0);
                 finish();

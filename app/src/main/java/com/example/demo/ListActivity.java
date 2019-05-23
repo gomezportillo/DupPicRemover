@@ -124,7 +124,8 @@ public class ListActivity extends AppCompatActivity {
                     ArrayList<Fichero> ficheros_aux = getRepeatedFilesFromURI(file.getUri());
                     repeated_images.addAll( ficheros_aux );
                 }
-                else if (file.getName().endsWith(".jpg") || file.getName().endsWith(".png") || file.getName().endsWith(".jpeg"))
+                else if (file.getName() != null &&
+                        (file.getName().endsWith(".jpg") || file.getName().endsWith(".png") || file.getName().endsWith(".jpeg")))
                 {
                     Log.d("mi_debug", "--------------------------------------");
 

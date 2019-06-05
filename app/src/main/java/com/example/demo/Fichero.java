@@ -39,7 +39,7 @@ public class Fichero
         {
             if(files.get(i).delete())
             {
-                cont++;
+                ++cont;
             }
         }
         return cont;

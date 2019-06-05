@@ -9,11 +9,11 @@ import android.widget.Toast;
 
 public class SuccessActivity extends AppCompatActivity
 {
+    private int images_deleted;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
-        int images_deleted;
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_success);
 

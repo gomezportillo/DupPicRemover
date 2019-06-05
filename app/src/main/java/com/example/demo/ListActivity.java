@@ -23,20 +23,20 @@ import java.util.Iterator;
 import java.util.Map;
 
 public class ListActivity extends AppCompatActivity {
+    private ListView lv_files;
+    private Button delete_button;
+
     private boolean recursive;
     private Uri uri_path;
     private ArrayList<Fichero> arrFicheros;
     private CustomListAdapter adaptador = null;
 
+    private ProgressDialog progressDialog;
+
     private HashMap<String, ArrayList<DocumentFile>> ficheros;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
-        ListView lv_files;
-        Button delete_button;
-        ProgressDialog progressDialog;
-
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list);
 
@@ -67,7 +67,7 @@ public class ListActivity extends AppCompatActivity {
         }
 
         // Search for files
-        arrFicheros = getRepeatedFilesFromURI(uri_path);
+        arrFicheros = getFilesFromURI(uri_path);
 
         lv_files = findViewById(R.id.listview_files);
         adaptador = new CustomListAdapter(this, arrFicheros);
@@ -82,9 +82,11 @@ public class ListActivity extends AppCompatActivity {
                 int deleted = 0;
                 boolean checked[] = adaptador.getChecked();
 
-                for (int i = 0; i < checked.length; i++) {
-                    Log.d("mi_debug", adaptador.getChecked()[i] + "");
-                    if (adaptador.getChecked()[i]) {
+                for (int i = 0; i < checked.length; i++)
+                {
+                    Log.d("hola", adaptador.getChecked()[i] + "");
+                    if (adaptador.getChecked()[i])
+                    {
                         deleted += arrFicheros.get(i).eliminarFicheros();
                     }
                 }
@@ -101,69 +103,77 @@ public class ListActivity extends AppCompatActivity {
      * @param uri The URI of the directory for duplicated images to be found
      * @return An ArrayList with the repeated images
      */
-    protected ArrayList<Fichero> getRepeatedFilesFromURI(Uri uri)
+    protected ArrayList<Fichero> getFilesFromURI(Uri uri)
     {
-        Log.d("mi_debug", "getFilesFromURI");
-        DocumentFile df_path = DocumentFile.fromTreeUri(this, uri);
+        Log.d("recursivo", String.valueOf(recursive));
 
-        ArrayList<DocumentFile> array_aux;
+        ArrayList<DocumentFile> arrDirectorios = new ArrayList<>();
+        arrDirectorios.add(DocumentFile.fromTreeUri(this, uri));
+
         ficheros = new HashMap<>();
-
-        ArrayList<Fichero> repeated_images = new ArrayList<>();
-
         boolean ocu = false;
 
-        if (df_path.exists())
+        while (!arrDirectorios.isEmpty())
         {
-            String tmp_str;
-            // http://android-er.blogspot.com/2015/09/example-of-using-intentactionopendocume.html
-            for (DocumentFile file : df_path.listFiles())
+            if (arrDirectorios.get(0).exists())
             {
-                if (file.isDirectory() && recursive)
+                String tmp_str;
+                // http://android-er.blogspot.com/2015/09/example-of-using-intentactionopendocume.html
+                for (DocumentFile file : arrDirectorios.get(0).listFiles())
                 {
-                    ArrayList<Fichero> ficheros_aux = getRepeatedFilesFromURI(file.getUri());
-                    repeated_images.addAll( ficheros_aux );
-                }
-                else if (file.getName() != null &&
-                        (file.getName().endsWith(".jpg") || file.getName().endsWith(".png") || file.getName().endsWith(".jpeg")))
-                {
-                    Log.d("mi_debug", "--------------------------------------");
-
-                    try
+                    if (file.isDirectory())
                     {
-                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), file.getUri());
-                        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
-                        byte[] byteArray = byteArrayOutputStream.toByteArray();
-                        String hash = Base64.encodeToString(byteArray, Base64.DEFAULT);
-
-                        if (ficheros.containsKey(hash))
+                        if (recursive)
                         {
-                            ocu = true;
-                            Log.d("mi_debug", "fichero repetido");
-                            ficheros.get(hash).add(file);
-                        }
-                        else
-                        {
-                            Log.d("mi_debug", "fichero nuevo encontrado");
-                            array_aux = new ArrayList<>();
-                            array_aux.add(file);
-                            ficheros.put(hash, array_aux);
+                            //files_str.addAll(getFilesFromURI(file.getUri()));
+                            arrDirectorios.add(file);
                         }
                     }
-                    catch (IOException e)
+                    else if (file.getName() != null &&
+                            (file.getName().endsWith(".jpg") ||
+                            file.getName().endsWith(".png") ||
+                            file.getName().endsWith(".jpeg")))
                     {
-                        e.printStackTrace();
+
+                        Log.d("hola", "--------------------------------------");
+
+                        try
+                        {
+                            Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), file.getUri());
+                            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                            bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+                            byte[] byteArray = byteArrayOutputStream.toByteArray();
+                            String hash = Base64.encodeToString(byteArray, Base64.DEFAULT);
+
+                            if (ficheros.containsKey(hash))
+                            {
+                                ocu = true;
+                                Log.d("hola", "fichero repetido");
+                                ficheros.get(hash).add(file);
+                            }
+                            else
+                            {
+                                Log.d("hola", "fichero nuevo encontrado");
+                                ArrayList<DocumentFile> aux = new ArrayList<>();
+                                aux.add(file);
+                                ficheros.put(hash, aux);
+                            }
+                        }
+                        catch (IOException e)
+                        {
+                            e.printStackTrace();
+                        }
                     }
                 }
             }
-        }
-        else
-        {
-            Toast.makeText(getApplicationContext(), "Path " + uri_path.toString() + " does not exists", Toast.LENGTH_SHORT).show();
+            else
+            {
+                Toast.makeText(getApplicationContext(), "Path " + uri_path.toString() + " does not exists", Toast.LENGTH_SHORT).show();
+            }
+            arrDirectorios.remove(0);
         }
 
-        if(!ocu)
+        if (!ocu)
         {
             Intent intent = new Intent(ListActivity.this, SuccessActivity.class);
             intent.putExtra("images_deleted", 0);
@@ -172,6 +182,7 @@ public class ListActivity extends AppCompatActivity {
         }
 
         //Una vez tengo TODAS las imagenes del smartphone, creo el adapter con las que se repiten
+        ArrayList<Fichero> arrFich = new ArrayList<>();
 
         Iterator it = ficheros.entrySet().iterator();
         while (it.hasNext())
@@ -190,9 +201,10 @@ public class ListActivity extends AppCompatActivity {
                 {
                     e.printStackTrace();
                 }
-                repeated_images.add(fic);
+                arrFich.add(fic);
             }
         }
-        return repeated_images;
+        return arrFich;
     }
+
 }

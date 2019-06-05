@@ -19,40 +19,35 @@ public class CustomListAdapter extends BaseAdapter {
     private ArrayList<Fichero> items;
     private boolean checked[];
 
-    public CustomListAdapter(Activity actividad, ArrayList<Fichero> items)
-    {
+    public CustomListAdapter(Activity actividad, ArrayList<Fichero> items) {
         this.activity = actividad;
         this.items = items;
         checked=new boolean[items.size()];
-        for (int i=0;i<items.size();i++)
-        {
+        for (int i=0;i<items.size();i++){
             checked[i]=false;
         }
     }
 
     @Override
-    public int getCount()
-    {
+    public int getCount() {
         return items.size();
     }
 
     @Override
-    public Object getItem(int position)
-    {
+    public Object getItem(int position) {
         return items.get(position);
     }
 
     @Override
-    public long getItemId(int position)
-    {
+    public long getItemId(int position) {
         return 0;
     }
 
     @Override
-    public View getView(final int position, View convertView, ViewGroup parent)
-    {
+    public View getView(final int position, View convertView, ViewGroup parent) {
         View v = convertView;
-        if (convertView == null) {
+        if (convertView == null)
+        {
             LayoutInflater inf = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             v = inf.inflate(R.layout.custom_files_list, null);
         }
@@ -90,8 +85,7 @@ public class CustomListAdapter extends BaseAdapter {
         return v;
     }
 
-    public boolean[] getChecked()
-    {
+    public boolean[] getChecked() {
         return checked;
     }
 }

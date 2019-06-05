@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -52,7 +51,7 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View v) {
                 Intent list_activity_intent = new Intent(MainActivity.this, ListActivity.class);
 
-                Log.d("mi_debug", "uri_path: "+uri_path);
+                //Log.d("uri", "uri_path: "+uri_path);
 
                 list_activity_intent.putExtra("URI", uri_path);
                 list_activity_intent.putExtra("Recursive", switch_recursive.isChecked());
@@ -72,6 +71,7 @@ public class MainActivity extends AppCompatActivity
             {
                 uri_path = data.getData();
                 text_path.setText(uri_path.getPath());
+                // Log.d("uri", "uri_path: "+uri_path.getPath());
                 button_search.setEnabled(true);
             }
             else
